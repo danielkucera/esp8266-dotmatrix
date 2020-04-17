@@ -27,11 +27,12 @@ print "UDP target port:", UDP_PORT
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
-
+oldnow = time.localtime(time.time())
 while True:
     now = time.localtime(time.time())
+    if now.tm_sec != oldnow.tm_sec:
 
-    data = array.array('B', 
+        data = array.array('B', 
             sseg[str(now.tm_hour/10)] + [0] +
             sseg[str(now.tm_hour%10)] + [0] +
             sseg[':'] + [0] +
@@ -41,5 +42,6 @@ while True:
             [now.tm_sec]
             ).tostring()
 
-    sock.sendto(data, (UDP_IP, UDP_PORT))
-    time.sleep(0.3)
+        sock.sendto(data, (UDP_IP, UDP_PORT))
+    oldnow = now
+    time.sleep(0.1)
