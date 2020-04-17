@@ -1,23 +1,21 @@
-#include <Arduino.h>
-#include <SPI.h>
 #include "LedMatrix.h"
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
-
-const char *ssid     = "coloseum";
-const char *password = "Kucerovisu1";
+#include <ArduinoOTA.h>
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
 WiFiUDP Udp;
+WiFiManager wifiManager;
 unsigned int localUdpPort = 1234;
 
 #define NUMBER_OF_DEVICES 4
 #define CS_PIN 4
+#define HOSTNAME "esp-dotmatrix"
 LedMatrix ledMatrix = LedMatrix(NUMBER_OF_DEVICES, CS_PIN);
 
 void setup() {
   Serial.begin(115200); // For debugging output
-
-  WiFi.begin(ssid, password);
 
   ledMatrix.init();
   ledMatrix.setIntensity(1); // range is 0-15
@@ -27,9 +25,14 @@ void setup() {
   ledMatrix.drawText();
   ledMatrix.commit();
 
-  while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
-  }
+  //wifiManager.resetSettings();
+
+  wifiManager.setConfigPortalTimeout(120);
+  wifiManager.autoConnect(HOSTNAME);
+
+  ArduinoOTA.begin();
+
+  MDNS.setHostname(HOSTNAME);
 
   int lastOctet = WiFi.localIP()[3];
 
@@ -45,6 +48,7 @@ void setup() {
 char incomingPacket[255];
 
 void loop() {
+  ArduinoOTA.handle();
 
   int packetSize = Udp.parsePacket();
   if (packetSize)
