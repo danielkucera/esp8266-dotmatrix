@@ -19,7 +19,7 @@ sseg = {
         ':': [ 0x28 ],
     }
 
-UDP_IP = "192.168.0.227"
+UDP_IP = "esp-dotmatrix.local"
 UDP_PORT = 1234
 
 print "UDP target IP:", UDP_IP
