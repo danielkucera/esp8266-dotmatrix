@@ -27,6 +27,8 @@ void setup() {
 
   //wifiManager.resetSettings();
 
+  WiFi.mode(WIFI_STA);
+
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.autoConnect(HOSTNAME);
 
@@ -56,9 +58,13 @@ void loop() {
     int len = Udp.read(incomingPacket, 255);
     if (len > 0)
     {
+      if (incomingPacket[0] & 0x80){
+        ledMatrix.init();
+      }
+      ledMatrix.setIntensity(incomingPacket[0] & 0x0F); // range is 0-15
       ledMatrix.clear();
-      for (int i=0; (i<8*NUMBER_OF_DEVICES) && (i<packetSize); i++){
-        ledMatrix.setColumn(i, incomingPacket[i]);
+      for (int i=0; (i<8*NUMBER_OF_DEVICES) && (i+1<packetSize); i++){
+        ledMatrix.setColumn(i, incomingPacket[i+1]);
         //ledMatrix.setColumn(i, 0xAA);
       }
       ledMatrix.commit(); // commit transfers the byte buffer to the displays
