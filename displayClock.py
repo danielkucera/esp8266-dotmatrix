@@ -67,7 +67,9 @@ while True:
         temp = get_temp()
     if now.tm_sec != oldnow.tm_sec:
 
-        data = []
+        data = [ 2 ]
+        if now.tm_sec == 0:
+            data[0] += 0x80
         data += zseg[now.tm_hour//10]
         data += sseg[' ']
         data += sseg[now.tm_hour%10]
