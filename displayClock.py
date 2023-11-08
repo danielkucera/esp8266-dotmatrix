@@ -47,15 +47,24 @@ def get_temp_influx():
         return 99
     return 98
 
-def format_temp(temp):
-    if temp < 0:
-        sign = 4
+def format_number(number):
+    ret = []
+
+    if number < 0:
+        ret += [4]
     else:
         sign = 0
-    tens = abs(temp)//10
-    ones = abs(temp)%10
+    anumber = abs(number)
+    tens = anumber//10
+    ones = anumber%10
 
-    return [sign] + zseg[tens] + sseg[ones]
+    if tens > 0:
+        ret += sseg[tens]
+        ret += sseg[' ']
+
+    ret += sseg[ones]
+
+    return ret
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
@@ -70,19 +79,26 @@ while True:
         data = [ 2 ]
         if now.tm_sec == 0:
             data[0] += 0x80
-        data += zseg[now.tm_hour//10]
-        data += sseg[' ']
-        data += sseg[now.tm_hour%10]
+        data += format_number(now.tm_hour)
         data += sseg[' ']
         data += sseg[':']
         data += sseg[' ']
-        data += sseg[now.tm_min//10]
-        data += sseg[' ']
-        data += sseg[now.tm_min%10]
+        data += format_number(now.tm_min)
         data += sseg[' ']
         data.append(pow(2, now.tm_sec*8//60) - 1)
 #            [now.tm_sec]
-        data += format_temp(temp)
+        data += sseg[' ']
+        data += format_number(now.tm_mday)
+        data += sseg[' ']
+        data += [128]
+        data += sseg[' ']
+        data += format_number(now.tm_mon)
+        data += sseg[' ']
+        data += [128]
+        data += sseg[' ']
+
+# temp
+        data += format_number(temp)
         #print(data)
         sock.sendto(bytes(data), (UDP_IP, UDP_PORT))
     oldnow = now
